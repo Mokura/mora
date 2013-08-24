@@ -2,7 +2,7 @@
 ; Mora - FFRPG SeeD HP/MP/Limit Tracker with Status Tracking
 ; A Player Character stat-keeper.
 ; Coded by Mokura
-; Version 0.2
+; Version 0.21
 ;==============================================================================
 
 #SingleInstance off
@@ -758,21 +758,29 @@ FinalOutput := ""
 TempCritHP := Floor(MaxHP * 0.25)
 
 ; Row output
-if (DontDisplayRow == 1)
-  RowOut =
+if (RowPosition == "Front")
+  RowOut = [F]%A_Space%
 else
-{
-  if (RowPosition == "Front")
-    RowOut = [F]%A_Space%
-  else
-    RowOut = [B]%A_Space%
-}
+  RowOut = [B]%A_Space%
 
 ; HP output
-if (CurHP <= TempCritHP )
-  HPOut = HP: ! %CurHP%/%MaxHP% !
+if ((UseBuffTempHP != 0) && (BuffTempHP > 0))
+{
+  TempHP = [%BuffTempHP%]
+  
+  if (CurHP <= TempCritHP )
+    HPOut = HP: ! %TempHP% %CurHP%/%MaxHP% !
+  else
+    HPOut = HP: %TempHP% %CurHP%/%MaxHP%
+}
+
 else
-  HPOut = HP: %CurHP%/%MaxHP%
+{
+  if (CurHP <= TempCritHP )
+    HPOut = HP: ! %CurHP%/%MaxHP% !
+  else
+    HPOut = HP: %CurHP%/%MaxHP%
+}
 
 ; MP output
 MPOut = MP: %CurMP%/%MaxMP%
@@ -897,20 +905,11 @@ if ((UseStat1 == 1) || (UseStat2 == 1) || (UseStat3 == 1) || (UseStat4 == 1) || 
 }
 
 ; Final output
-if (DontDisplayStatuses == 1)
-{
-  if (MaxLimit > 0)
-    FinalOutput = (( %RowOut%%HPOut% | %MPOut% | %LimitOut% | %SoSOut% ))
-  else
-    FinalOutput = (( %RowOut%%HPOut% | %MPOut% | %SoSOut% ))
-}
+if (MaxLimit > 0)
+  FinalOutput = (( %RowOut%%HPOut% | %MPOut% | %LimitOut% | %SoSOut% | %StatusOut% ))
 else
-{
-  if (MaxLimit > 0)
-    FinalOutput = (( %RowOut%%HPOut% | %MPOut% | %LimitOut% | %SoSOut% | %StatusOut% ))
-  else
-    FinalOutput = (( %RowOut%%HPOut% | %MPOut% | %SoSOut% | %StatusOut% ))
-}
+  FinalOutput = (( %RowOut%%HPOut% | %MPOut% | %SoSOut% | %StatusOut% ))
+
 
 clipboard = %FinalOutput%
 
