@@ -2,7 +2,7 @@
 ; Mora - FFRPG SeeD HP/MP/Limit Tracker with Status Tracking
 ; A Player Character stat-keeper.
 ; Coded by Mokura
-; Version 0.1
+; Version 0.2
 ;==============================================================================
 
 #SingleInstance off
@@ -38,13 +38,17 @@ UseBuffArmor := 0
 BuffArmor := 0
 UseBuffMagicArmor := 0
 BuffMagicArmor := 0
+UseBuffTempHP := 0
+BuffTempHP := 0
 UseBubbleEffect := 0
 ReverseDamage := 0
-RowPosition := "Front Row"
+RowPosition := "Front"
+BuffRegen := 0
+BuffRefresh := 0
 
 ; "Don't display" toggling variables.
-DontDisplayRow := 0
-DontDisplayStatuses := 0
+; DontDisplayRow := 0
+; DontDisplayStatuses := 0
 ;-
 
 ;+ Tab 2 variables
@@ -193,13 +197,24 @@ Gui, Add, CheckBox, x285 y125 w100 h20 vUseBuffMagicArmor, M. Armor Buff
 Gui, Add, Text, x285 y148 w50 h20 +Center, Amount
 Gui, Add, Edit, x335 y145 w50 h20 Limit3 r1 Number vBuffMagicArmor, 0
 Gui, Add, UpDown, Range0-999
-Gui, Add, CheckBox, x285 y170 w100 h20 vUseBubbleEffect gBubbleEffect, Bubble Effect
-Gui, Add, Checkbox, x285 y190 w103 h20 vReverseDamage, Reverse Effect
-Gui, Add, Text, x285 y218 w100 h20 +Center, Row Position
-Gui, Add, DropDownList, x285 y235 w100 h20 r2 Choose1 vRowPosition, Front Row|Back Row
-Gui, Add, Text, x285 y263 w100 h20 +Center, Don't Display
-Gui, Add, CheckBox, x285 y280 w100 h20 vDontDisplayRow, Row Position
-Gui, Add, CheckBox, x285 y300 w100 h20 vDontDisplayStatuses, Statuses
+Gui, Add, CheckBox, x285 y165 w100 h20 vUseBuffTempHP, Temporary HP
+Gui, Add, Text, x285 y188 w50 h20 +Center, Amount
+Gui, Add, Edit, x335 y185 w50 h20 Limit4 r1 Number vBuffTempHP, 0
+Gui, Add, UpDown, Range0-9999
+Gui, Add, CheckBox, x285 y205 w100 h20 vUseBubbleEffect gBubbleEffect, Bubble Effect
+Gui, Add, Checkbox, x285 y225 w103 h20 vReverseDamage, Reverse Effect
+Gui, Add, Text, x285 y248 w25 h20 +Center, Row
+Gui, Add, DropDownList, x315 y245 w70 h20 r2 Choose1 vRowPosition, Front|Back
+
+Gui, Add, Text, x285 y273 w35 h20 +Center, Regen
+Gui, Add, Edit, x320 y270 w45 h20 Limit3 r1 Number vBuffRegen
+Gui, Add, UpDown, Range0-999
+Gui, Add, Button, x367 y271 w18 h18 +Center gHealRegen, +
+
+Gui, Add, Text, x285 y298 w35 h20 +Center, Refrs.
+Gui, Add, Edit, x320 y295 w45 h20 Limit3 r1 Number vBuffRefresh
+Gui, Add, UpDown, Range0-999
+Gui, Add, Button, x367 y296 w18 h18 +Center gHealRefresh, +
 
 ; Player status area
 Gui, Add, GroupBox, x0 y325 w390 h40, Current Status
@@ -348,17 +363,32 @@ else
   {
     StringReplace, OutputFile, OutputFile, %OutputFile%, %OutputFile%.ini
   }
-
+  
+  ; name
   IniWrite, %CharaName%, %OutputFile%, Character Data, File_CharaName
+  
+  ; current/maximum HP
   IniWrite, %CurHP%, %OutputFile%, Character Data, File_CurHP
   IniWrite, %MaxHP%, %OutputFile%, Character Data, File_MaxHP
+  
+  ; current/maximum MP
   IniWrite, %CurMP%, %OutputFile%, Character Data, File_CurMP
   IniWrite, %MaxMP%, %OutputFile%, Character Data, File_MaxMP
+  
+  ; current/maximum LP
   IniWrite, %CurLimit%, %OutputFile%, Character Data, File_CurLimit
   IniWrite, %MaxLimit%, %OutputFile%, Character Data, File_MaxLimit
+  
+  ; current armor/m.armor
   IniWrite, %Armor%, %OutputFile%, Character Data, File_Armor
   IniWrite, %MagicArmor%, %OutputFile%, Character Data, File_MagicArmor
+  
+  ; current position
   IniWrite, %RowPosition%, %OutputFile%, Character Data, File_RowPosition
+  
+  ; regen/refresh values
+  IniWrite, %BuffRegen%, %OutputFile%, Character Data, File_BuffRegen
+  IniWrite, %BuffRefresh%, %OutputFile%, Character Data, File_BuffRefresh
 }
 return
 
@@ -373,29 +403,46 @@ if InputFile=
   return
 else
 {
+  ; name
   IniRead, F_CharaName, %InputFile%, Character Data, File_CharaName, %A_Space%
   GuiControl, , CharaName, %F_CharaName%
+  
+  ; current/maximum HP
   IniRead, F_CurHP, %InputFile%, Character Data, File_CurHP, 0
   GuiControl, , CurHP, %F_CurHP%
   IniRead, F_MaxHP, %InputFile%, Character Data, File_MaxHP, 0
   GuiControl, , MaxHP, %F_MaxHP%
+  
+  ; current/maximum MP
   IniRead, F_CurMP, %InputFile%, Character Data, File_CurMP, 0
   GuiControl, , CurMP, %F_CurMP%
   IniRead, F_MaxMP, %InputFile%, Character Data, File_MaxMP, 0
   GuiControl, , MaxMP, %F_MaxMP%
+  
+  ; current/maximum LP
   IniRead, F_CurLimit, %InputFile%, Character Data, File_CurLimit, 0
   GuiControl, , CurLimit, %F_CurLimit%
   IniRead, F_MaxLimit, %InputFile%, Character Data, File_MaxLimit, 0
   GuiControl, , MaxLimit, %F_MaxLimit%
   IniRead, F_Armor, %InputFile%, Character Data, File_Armor, 0
+  
+  ; current armor/m.armor
   GuiControl, , Armor, %F_Armor%
   IniRead, F_MagicArmor, %InputFile%, Character Data, File_MagicArmor, 0
   GuiControl, , MagicArmor, %F_MagicArmor%
+  
+  ; current position
   IniRead, F_RowPosition, %InputFile%, Character Data, File_RowPosition, 0
-  if (F_RowPosition == "Front Row")
-    GuiControl, , RowPosition, |Front Row||Back Row
+  if ((F_RowPosition == "Front") || (F_RowPosition == "Front Row"))
+    GuiControl, , RowPosition, |Front||Back
   else
-    GuiControl, , RowPosition, |Front Row|Back Row||
+    GuiControl, , RowPosition, |Front|Back||
+
+  ; regen/refresh values
+  IniRead, F_BuffRegen, %InputFile%, Character Data, File_BuffRegen, 0
+  GuiControl, , BuffRegen, %F_BuffRegen%
+  IniRead, F_BuffRefresh, %InputFile%, Character Data, File_BuffRefresh, 0
+  GuiControl, , BuffRefresh, %F_BuffRefresh%
 }
 
 return
@@ -422,6 +469,24 @@ if (TempPhysDmg < 1)
 
 if (ReverseDamage == 1)
   TempPhysDmg := TempPhysDmg * -1
+
+if (UseBuffTempHP == 1 && ReverseDamage == 0)
+{
+  if (TempPhysDmg >= BuffTempHP)
+  {
+    TempPhysDmg := TempPhysDmg - BuffTempHP
+    BuffTempHP := 0
+	GuiControl, , UseBuffTempHP, 0
+	GuiControl, , BuffTempHP, %BuffTempHP%
+  }
+  
+  else
+  {
+    BuffTempHP := BuffTempHP - TempPhysDmg
+	TempPhysDmg := 0
+	GuiControl, , BuffTempHP, %BuffTempHP%
+  }
+}
 
 if (CurHP - TempPhysDmg < 0)
   CurHP := 0
@@ -456,6 +521,24 @@ if (TempMagDmg < 1)
 
 if (ReverseDamage == 1)
   TempMagDmg := TempMagDmg * -1
+
+if (UseBuffTempHP == 1 && ReverseDamage == 0)
+{
+  if (TempMagDmg >= BuffTempHP)
+  {
+    TempMagDmg := TempMagDmg - BuffTempHP
+    BuffTempHP := 0
+	GuiControl, , UseBuffTempHP, 0
+	GuiControl, , BuffTempHP, %BuffTempHP%
+  }
+  
+  else
+  {
+    BuffTempHP := BuffTempHP - TempMagDmg
+	TempPhysDmg := 0
+	GuiControl, , BuffTempHP, %BuffTempHP%
+  }
+}
 
 if (CurHP - TempMagDmg < 0)
   CurHP := 0
@@ -626,6 +709,46 @@ GuiControl, , CurStatus, %TempSkillWarn%
 return
 
 ;==============================================================================
+; Regen routine
+;==============================================================================
+HealRegen:
+Gui, Submit, NoHide
+TempHeal := BuffRegen
+if (ReverseDamage == 1)
+  TempHeal := TempHeal * -1
+
+if (CurHP + TempHeal > MaxHP)
+  CurHP := MaxHP
+else if (CurHP + TempHeal < 0)
+  CurHP := 0
+else
+  CurHP := CurHP + TempHeal
+
+GuiControl, , CurHP, %CurHP%
+GuiControl, , EffectiveDmg, %TempHeal%
+return
+
+;==============================================================================
+; Refresh routine
+;==============================================================================
+HealRefresh:
+Gui, Submit, NoHide
+TempMPHeal := BuffRefresh
+if (ReverseDamage == 1)
+  TempMPHeal := TempMPHeal * -1
+
+if (CurMP + TempMPHeal > MaxMP)
+  CurMP := MaxMP
+else if (CurMP + TempMPHeal < 0)
+  CurMP := 0
+else
+  CurMP := CurMP + TempMPHeal
+
+GuiControl, , CurMP, %CurMP%
+GuiControl, , EffectiveDmg, %TempMPHeal%
+return
+
+;==============================================================================
 ; Display status routine
 ;==============================================================================
 DispStatus:
@@ -639,7 +762,7 @@ if (DontDisplayRow == 1)
   RowOut =
 else
 {
-  if (RowPosition == "Front Row")
+  if (RowPosition == "Front")
     RowOut = [F]%A_Space%
   else
     RowOut = [B]%A_Space%
