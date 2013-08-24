@@ -2,7 +2,7 @@
 ; Mora - FFRPG SeeD HP/MP/Limit Tracker with Status Tracking
 ; A Player Character stat-keeper.
 ; Coded by Mokura
-; Version 0.22
+; Version 0.23
 ;==============================================================================
 
 #SingleInstance off
@@ -114,7 +114,7 @@ Gui, Tab, Player Tracker,, Exact
 
 ; Header (Character Name, Save, Load)
 Gui, Add, Text, x5 y8 w80 h20 +Center, Character Name
-Gui, Add, Edit, x90 y5 w190 h20 r1 vCharaName
+Gui, Add, Edit, x90 y5 w190 h20 r1 vCharaName gCharaNameDisplay
 Gui, Add, Button, x285 y5 w50 h20 +Center gCharaSave, Save
 Gui, Add, Button, x340 y5 w50 h20 +Center gCharaLoad, Load
 
@@ -174,7 +174,8 @@ Gui, Add, Text, x110 y233 w80 h20 +Center, Effective Dmg.
 Gui, Add, Edit, x195 y230 w80 h20 Limit7 r1 Number ReadOnly vEffectiveDmg
 
 ; Poison and Gravity
-Gui, Add, Button, x110 y255 w165 h20 +Center gPoisonDmg, Poison Damage
+Gui, Add, Button, x110 y255 w80 h20 +Center gPoisonDmg, Poison Dmg.
+Gui, Add, Button, x195 y255 w80 h20 +Center gMainDecUsed, Dec. Statuses
 Gui, Add, Button, x110 y280 w80 h20 +Center gGravityEffect, Gravity
 Gui, Add, Edit, x195 y280 w44 h20 Limit3 r1 Number vGravityPercent
 Gui, Add, UpDown, Range0-100
@@ -349,6 +350,23 @@ return
 
 ;+ Tab 1 routines
 ;==============================================================================
+; Routine to display the character name in the title bar
+;==============================================================================
+CharaNameDisplay:
+Gui, Submit, NoHide
+if (CharaName != "")
+{
+  WinGet, ActiveID, ID, A
+  WinSetTitle, ahk_id %ActiveID%, , [%CharaName%] Mora - Player Status Tracker
+}
+else
+{
+  WinGet, ActiveID, ID, A
+  WinSetTitle, ahk_id %ActiveID%, , Mora - Player Status Tracker
+}
+return
+
+;==============================================================================
 ; Character data saving routine
 ;==============================================================================
 CharaSave:
@@ -451,7 +469,6 @@ else
   IniRead, F_UseBubbleEffect, %InputFile%, Character Data, File_UseBubbleEffect, 0
   GuiControl, , UseBubbleEffect, %F_UseBubbleEffect%
 }
-
 return
 
 ;==============================================================================
@@ -542,7 +559,7 @@ if (UseBuffTempHP == 1 && ReverseDamage == 0)
   else
   {
     BuffTempHP := BuffTempHP - TempMagDmg
-	TempPhysDmg := 0
+	TempMagDmg := 0
 	GuiControl, , BuffTempHP, %BuffTempHP%
   }
 }
@@ -940,6 +957,14 @@ else
 
 GuiControl, , CurHP, %CurHP%
 GuiControl, , EffectiveDmg, %TempPoisonDamage%
+return
+
+;==============================================================================
+; Main Tab status decrementing routine
+;==============================================================================
+MainDecUsed:
+GoSub DecUsed
+GuiControl, , CurStatus, Decremented current statuses.
 return
 
 ;==============================================================================
