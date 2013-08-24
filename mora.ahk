@@ -2,7 +2,7 @@
 ; Mora - FFRPG SeeD HP/MP/Limit Tracker with Status Tracking
 ; A Player Character stat-keeper.
 ; Coded by Mokura
-; Version 0.21
+; Version 0.22
 ;==============================================================================
 
 #SingleInstance off
@@ -389,6 +389,9 @@ else
   ; regen/refresh values
   IniWrite, %BuffRegen%, %OutputFile%, Character Data, File_BuffRegen
   IniWrite, %BuffRefresh%, %OutputFile%, Character Data, File_BuffRefresh
+  
+  ; bubble status
+  IniWrite, %UseBubbleEffect%, %OutputFile%, Character Data, File_UseBubbleEffect
 }
 return
 
@@ -443,6 +446,10 @@ else
   GuiControl, , BuffRegen, %F_BuffRegen%
   IniRead, F_BuffRefresh, %InputFile%, Character Data, File_BuffRefresh, 0
   GuiControl, , BuffRefresh, %F_BuffRefresh%
+  
+  ; bubble status
+  IniRead, F_UseBubbleEffect, %InputFile%, Character Data, File_UseBubbleEffect, 0
+  GuiControl, , UseBubbleEffect, %F_UseBubbleEffect%
 }
 
 return
