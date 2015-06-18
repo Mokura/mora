@@ -2,7 +2,7 @@
 ; Mora - FFRPG SeeD HP/MP/Limit Tracker with Status Tracking
 ; A Player Character stat-keeper.
 ; Coded by Mokura
-; Version 0.23
+; Version 0.24
 ;==============================================================================
 
 #SingleInstance off
@@ -40,13 +40,15 @@ UseBuffMagicArmor := 0
 BuffMagicArmor := 0
 UseBuffTempHP := 0
 BuffTempHP := 0
+UseBuffTempMP := 0
+BuffTempMP := 0
 UseBubbleEffect := 0
 ReverseDamage := 0
 RowPosition := "Front"
 BuffRegen := 0
 BuffRefresh := 0
 
-; "Don't display" toggling variables.
+; "Don't display" toggling variables. (deprecated)
 ; DontDisplayRow := 0
 ; DontDisplayStatuses := 0
 ;-
@@ -184,38 +186,76 @@ Gui, Add, CheckBox, x110 y305 w55 h20 vGravityHealing, Healing
 Gui, Add, CheckBox, x170 y305 w35 h20 vUseMPGrav, MP
 Gui, Add, CheckBox, x205 y305 w72 h20 vMaxBased, Max Based
 
+;+ Modifiers and Options (old)
+;Gui, Add, GroupBox, x280 y30 w110 h295, Modifiers/Options
+;Gui, Add, CheckBox, x285 y45 w100 h20 vUseDefenseFactor, Defense Factor
+;Gui, Add, Text, x285 y68 w50 h20 +Center, `% Rate
+;Gui, Add, Edit, x335 y65 w50 h20 Limit3 r1 Number vDefenseFactorPercent
+;Gui, Add, UpDown, Range0-100, 100
+;Gui, Add, CheckBox, x285 y85 w100 h20 vUseBuffArmor, Armor Buff
+;Gui, Add, Text, x285 y108 w50 h20 +Center, Amount
+;Gui, Add, Edit, x335 y105 w50 h20 Limit3 r1 Number vBuffArmor, 0
+;Gui, Add, UpDown, Range0-999
+;Gui, Add, CheckBox, x285 y125 w100 h20 vUseBuffMagicArmor, M. Armor Buff
+;Gui, Add, Text, x285 y148 w50 h20 +Center, Amount
+;Gui, Add, Edit, x335 y145 w50 h20 Limit3 r1 Number vBuffMagicArmor, 0
+;Gui, Add, UpDown, Range0-999
+;Gui, Add, CheckBox, x285 y165 w100 h20 vUseBuffTempHP, Temporary HP
+;Gui, Add, Text, x285 y188 w50 h20 +Center, Amount
+;Gui, Add, Edit, x335 y185 w50 h20 Limit4 r1 Number vBuffTempHP, 0
+;Gui, Add, UpDown, Range0-9999
+;Gui, Add, CheckBox, x285 y205 w100 h20 vUseBubbleEffect gBubbleEffect, Bubble Effect
+;Gui, Add, Checkbox, x285 y225 w103 h20 vReverseDamage, Reverse Effect
+;Gui, Add, Text, x285 y248 w25 h20 +Center, Row
+;Gui, Add, DropDownList, x315 y245 w70 h20 r2 Choose1 vRowPosition, Front|Back
+
+;Gui, Add, Text, x285 y273 w35 h20 +Center, Regen
+;Gui, Add, Edit, x320 y270 w45 h20 Limit3 r1 Number vBuffRegen
+;Gui, Add, UpDown, Range0-999
+;Gui, Add, Button, x367 y271 w18 h18 +Center gHealRegen, +
+
+;Gui, Add, Text, x285 y298 w35 h20 +Center, Refrs.
+;Gui, Add, Edit, x320 y295 w45 h20 Limit3 r1 Number vBuffRefresh
+;Gui, Add, UpDown, Range0-999
+;Gui, Add, Button, x367 y296 w18 h18 +Center gHealRefresh, +
+;-
+
 ; Modifiers and Options
+; base x280 y30
 Gui, Add, GroupBox, x280 y30 w110 h295, Modifiers/Options
-Gui, Add, CheckBox, x285 y45 w100 h20 vUseDefenseFactor, Defense Factor
-Gui, Add, Text, x285 y68 w50 h20 +Center, `% Rate
-Gui, Add, Edit, x335 y65 w50 h20 Limit3 r1 Number vDefenseFactorPercent
+Gui, Add, Text, x285 y48 w100 h20 +Center, Defense Factor
+Gui, Add, CheckBox, x285 y65 w50 h20 vUseDefenseFactor, Def`%
+Gui, Add, Edit, x335 y65 w50 h20 vDefenseFactorPercent
 Gui, Add, UpDown, Range0-100, 100
-Gui, Add, CheckBox, x285 y85 w100 h20 vUseBuffArmor, Armor Buff
-Gui, Add, Text, x285 y108 w50 h20 +Center, Amount
-Gui, Add, Edit, x335 y105 w50 h20 Limit3 r1 Number vBuffArmor, 0
+Gui, Add, Text, x290 y93 w25 h20 +Center, Row:
+Gui, Add, DropDownList, x315 y90 w70 h20 r1 Choose1 vRowPosition, Front|Back
+
+Gui, Add, Text, x285 y118 w100 h20 +Center, Temporary Stats
+Gui, Add, CheckBox, x285 y135 w50 h20 vUseBuffArmor, Arm
+Gui, Add, Edit, x335 y135 w50 h20 Limit3 r1 Number vBuffArmor, 0
 Gui, Add, UpDown, Range0-999
-Gui, Add, CheckBox, x285 y125 w100 h20 vUseBuffMagicArmor, M. Armor Buff
-Gui, Add, Text, x285 y148 w50 h20 +Center, Amount
-Gui, Add, Edit, x335 y145 w50 h20 Limit3 r1 Number vBuffMagicArmor, 0
+Gui, Add, CheckBox, x285 y155 w50 h20 vUseBuffMagicArmor, MArm
+Gui, Add, Edit, x335 y155 w50 h20 Limit3 r1 Number vBuffMagicArmor, 0
 Gui, Add, UpDown, Range0-999
-Gui, Add, CheckBox, x285 y165 w100 h20 vUseBuffTempHP, Temporary HP
-Gui, Add, Text, x285 y188 w50 h20 +Center, Amount
-Gui, Add, Edit, x335 y185 w50 h20 Limit4 r1 Number vBuffTempHP, 0
+Gui, Add, CheckBox, x285 y175 w50 h20 vUseBuffTempHP, HP
+Gui, Add, Edit, x335 y175 w50 h20 Limit4 r1 Number vBuffTempHP, 0
 Gui, Add, UpDown, Range0-9999
-Gui, Add, CheckBox, x285 y205 w100 h20 vUseBubbleEffect gBubbleEffect, Bubble Effect
-Gui, Add, Checkbox, x285 y225 w103 h20 vReverseDamage, Reverse Effect
-Gui, Add, Text, x285 y248 w25 h20 +Center, Row
-Gui, Add, DropDownList, x315 y245 w70 h20 r2 Choose1 vRowPosition, Front|Back
+Gui, Add, CheckBox, x285 y195 w50 h20 vUseBuffTempMP, MP
+Gui, Add, Edit, x335 y195 w50 h20 Limit4 r1 Number vBuffTempMP, 0
+Gui, Add, UpDown, Range0-9999
+Gui, Add, CheckBox, x285 y217 w100 h20 vUseBubbleEffect gBubbleEffect, Bubble Effect
+Gui, Add, CheckBox, x285 y237 w100 h20 vReverseDamage, Reverse Effect
 
-Gui, Add, Text, x285 y273 w35 h20 +Center, Regen
-Gui, Add, Edit, x320 y270 w45 h20 Limit3 r1 Number vBuffRegen
+Gui, Add, Text, x285 y258 w100 h20 +Center, Gradual Healing
+Gui, Add, Text, x285 y278 w35 h20 +Center, Regen
+Gui, Add, Edit, x320 y275 w45 h20 Limit3 r1 Number vBuffRegen
 Gui, Add, UpDown, Range0-999
-Gui, Add, Button, x367 y271 w18 h18 +Center gHealRegen, +
+Gui, Add, Button, x367 y276 w18 h18 +Center gHealRegen, +
+Gui, Add, Text, x285 y303 w35 h20 +Center, Refrs.
+Gui, Add, Edit, x320 y300 w45 h20 Limit3 r1 Number vBuffRefresh
+Gui, Add, UpDown, Range0-999
+Gui, Add, Button, x367 y301 w18 h18 +Center gHealRefresh, +
 
-Gui, Add, Text, x285 y298 w35 h20 +Center, Refrs.
-Gui, Add, Edit, x320 y295 w45 h20 Limit3 r1 Number vBuffRefresh
-Gui, Add, UpDown, Range0-999
-Gui, Add, Button, x367 y296 w18 h18 +Center gHealRefresh, +
 
 ; Player status area
 Gui, Add, GroupBox, x0 y325 w390 h40, Current Status
@@ -596,6 +636,24 @@ if (TempPhysMPDmg < 1)
 
 if (ReverseDamage == 1)
   TempPhysMPDmg := TempPhysMPDmg * -1
+  
+if (UseBuffTempMP == 1 && ReverseDamage == 0)
+{
+  if (TempPhysDmg >= BuffTempMP)
+  {
+    TempPhysDmg := TempPhysDmg - BuffTempMP
+    BuffTempHP := 0
+	GuiControl, , UseBuffTempMP, 0
+	GuiControl, , BuffTempMP, %BuffTempMP%
+  }
+  
+  else
+  {
+    BuffTempMP := BuffTempMP - TempPhysDmg
+	TempPhysDmg := 0
+	GuiControl, , BuffTempMP, %BuffTempMP%
+  }
+}
 
 if (CurMP - TempPhysMPDmg < 0)
   CurMP := 0
@@ -629,6 +687,24 @@ if (TempMagMPDmg < 1)
 
 if (ReverseDamage == 1)
   TempMagMPDmg := TempMagMPDmg * -1
+  
+if (UseBuffTempMP == 1 && ReverseDamage == 0)
+{
+  if (TempMagDmg >= BuffTempMP)
+  {
+    TempMagDmg := TempMagDmg - BuffTempMP
+    BuffTempMP := 0
+	GuiControl, , UseBuffTempMP, 0
+	GuiControl, , BuffTempMP, %BuffTempMP%
+  }
+  
+  else
+  {
+    BuffTempHP := BuffTempMP - TempMagDmg
+	TempMagDmg := 0
+	GuiControl, , BuffTempMP, %BuffTempMP%
+  }
+}
 
 if (CurMP - TempMagMPDmg < 0)
   CurMP := 0
@@ -720,10 +796,24 @@ Gui, Submit, NoHide
 TempSkillMP := Effect
 TempSkillWarn := ""
 
-if (CurMP < TempSkillMP)
+if ((UseBuffTempMP == 0 && CurMP < TempSkillMP) || (UseBuffTempMP == 1 && (CurMP + BuffTempMP) < TempSkillMP))
   TempSkillWarn := "Not enough MP!"
 else
 {
+  if (UseBuffTempMP == 1 && BuffTempMP > 0)
+  {
+    if (BuffTempMP - TempSkillMP < 0)
+	{
+	  TempSkillMP := (BuffTempMP - TempSkillMP) * -1
+	  BuffTempMP := 0
+	}
+	
+	else
+	{
+	  BuffTempMP := BuffTempMP - TempSkillMP
+	}
+	GuiControl, , BuffTempMP, %BuffTempMP%
+  }
   CurMP := CurMP - TempSkillMP
   TempSkillWarn := "Skill attempted!"
 }
@@ -807,7 +897,16 @@ else
 }
 
 ; MP output
-MPOut = MP: %CurMP%/%MaxMP%
+if ((UseBuffTempMP != 0) && (BuffTempMP > 0))
+{
+  TempMP = [%BuffTempMP%]
+  MPOut = MP: %TempMP% %CurMP%/%MaxMP%
+}
+
+else
+{
+  MPOut = MP: %CurMP%/%MaxMP%
+}
 
 ; Limit output
 LimitOut = Limit: %CurLimit%/%MaxLimit%
