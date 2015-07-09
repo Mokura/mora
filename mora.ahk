@@ -639,18 +639,18 @@ if (ReverseDamage == 1)
   
 if (UseBuffTempMP == 1 && ReverseDamage == 0)
 {
-  if (TempPhysDmg >= BuffTempMP)
+  if (TempPhysMPDmg >= BuffTempMP)
   {
-    TempPhysDmg := TempPhysDmg - BuffTempMP
-    BuffTempHP := 0
+    TempPhysMPDmg := TempPhysMPDmg - BuffTempMP
+    BuffTempMP := 0
 	GuiControl, , UseBuffTempMP, 0
 	GuiControl, , BuffTempMP, %BuffTempMP%
   }
   
   else
   {
-    BuffTempMP := BuffTempMP - TempPhysDmg
-	TempPhysDmg := 0
+    BuffTempMP := BuffTempMP - TempPhysMPDmg
+	TempPhysMPDmg := 0
 	GuiControl, , BuffTempMP, %BuffTempMP%
   }
 }
@@ -663,6 +663,7 @@ else
   CurMP := CurMP - TempPhysMPDmg
 
 GuiControl, , CurMP, %CurMP%
+GuiControl, , BuffTempMP, %BuffTempMP%
 GuiControl, , EffectiveDmg, %TempPhysMPDmg%
 return
 
@@ -690,9 +691,9 @@ if (ReverseDamage == 1)
   
 if (UseBuffTempMP == 1 && ReverseDamage == 0)
 {
-  if (TempMagDmg >= BuffTempMP)
+  if (TempMagMPDmg >= BuffTempMP)
   {
-    TempMagDmg := TempMagDmg - BuffTempMP
+    TempMagMPDmg := TempMagMPDmg - BuffTempMP
     BuffTempMP := 0
 	GuiControl, , UseBuffTempMP, 0
 	GuiControl, , BuffTempMP, %BuffTempMP%
@@ -700,8 +701,8 @@ if (UseBuffTempMP == 1 && ReverseDamage == 0)
   
   else
   {
-    BuffTempHP := BuffTempMP - TempMagDmg
-	TempMagDmg := 0
+    BuffTempMP := BuffTempMP - TempMagMPDmg
+	TempMagMPDmg := 0
 	GuiControl, , BuffTempMP, %BuffTempMP%
   }
 }
@@ -714,6 +715,7 @@ else
   CurMP := CurMP - TempMagMPDmg
 
 GuiControl, , CurMP, %CurMP%
+GuiControl, , BuffTempMP, %BuffTempMP%
 GuiControl, , EffectiveDmg, %TempMagMPDmg%
 return
 
@@ -811,6 +813,7 @@ else
 	else
 	{
 	  BuffTempMP := BuffTempMP - TempSkillMP
+	  TempSkillMP := 0
 	}
 	GuiControl, , BuffTempMP, %BuffTempMP%
   }
